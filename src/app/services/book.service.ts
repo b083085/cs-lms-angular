@@ -26,6 +26,17 @@ export interface CreateBookRequest {
   authorId: string;
 }
 
+export interface UpdateBookRequest {
+  bookId: string;
+  title: string;
+  summary: string;
+  isbn: string;
+  publishedOn: string;
+  totalCopies: number;
+  genreId: string;
+  authorId: string;
+}
+
 export interface Genre {
   genreId: string;
   name: string;
@@ -110,23 +121,10 @@ export class BookService {
   }
 
   // Update an existing book
-  updateBook(book: Book): Observable<any> {
+  updateBook(book: UpdateBookRequest): Observable<any> {
     const url = `${this.API_URL}/books`;
     console.log('BookService: Making PUT request to:', url, 'with data:', book);
-    return this.http.put<Book>(url, book)
-      .pipe(
-        tap(updatedBook => {
-          console.log('BookService: Updated book:', updatedBook);
-          const currentBooksResponse = this.booksSubject.getValue();
-          if (currentBooksResponse && Array.isArray(currentBooksResponse.items)) {
-            const updatedItems = currentBooksResponse.items.map((b: Book) => b.bookId === book.bookId ? updatedBook : b);
-            this.booksSubject.next({
-              ...currentBooksResponse,
-              items: updatedItems
-            });
-          }
-        })
-      );
+    return this.http.put<any>(url, book);
   }
 
   // Delete a book

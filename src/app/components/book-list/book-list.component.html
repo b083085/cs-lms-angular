@@ -85,7 +85,7 @@
                 <td class="title-cell">{{ book.title }}</td>
                 <td class="summary-cell">{{ book.summary }}</td>
                 <td class="isbn-cell">{{ book.isbn }}</td>
-                <td class="published-cell">{{ book.publishedOn | date:'yyyy' }}</td>
+                <td class="published-cell">{{ book.publishedOn | date:'yyyy-MM-dd' }}</td>
                 <td class="genre-cell">{{ book.genre.name }}</td>
                 <td class="author-cell">{{ book.author.name }}</td>
                 <td class="availability-cell">
@@ -176,6 +176,10 @@
           <span>{{ selectedBook.publishedOn }}</span>
         </div>
         <div class="detail-row">
+          <label>Total Copies:</label>
+          <span>{{ selectedBook.totalCopies }}</span>
+        </div>
+        <div class="detail-row">
           <label>Genre:</label>
           <span>{{ selectedBook.genre.name }}</span>
         </div>
@@ -257,41 +261,42 @@
     <div class="modal-body" *ngIf="selectedBook">
       <form class="edit-form">
         <div class="form-group">
-          <label>Title:</label>
+          <label>Title</label>
           <input type="text" [(ngModel)]="selectedBook.title" name="title" class="form-control">
         </div>
         <div class="form-group">
-          <label>Author:</label>
-          <input type="text" [(ngModel)]="selectedBook.author" name="author" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>ISBN:</label>
-          <input type="text" [(ngModel)]="selectedBook.isbn" name="isbn" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Published Year:</label>
-          <input type="number" [(ngModel)]="selectedBook.publishedOn" name="published" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Genre:</label>
-          <input type="text" [(ngModel)]="selectedBook.genre" name="genre" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Summary:</label>
+          <label>Summary</label>
           <textarea [(ngModel)]="selectedBook.summary" name="summary" class="form-control" rows="3"></textarea>
         </div>
         <div class="form-group">
-          <label>Availability:</label>
-          <select [(ngModel)]="selectedBook.availability" name="available" class="form-control">
-            <option [ngValue]="true">Available</option>
-            <option [ngValue]="false">Unavailable</option>
+          <label>ISBN</label>
+          <input type="text" [(ngModel)]="selectedBook.isbn" name="isbn" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Published Date</label>
+          <input type="date" [(ngModel)]="selectedBookPublishedOn" name="published" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Total Copies</label>
+          <input type="number" [(ngModel)]="selectedBook.totalCopies" name="totalCopies" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Genre</label>
+          <select [(ngModel)]="selectedBook.genre" name="genre" class="form-control">
+            <option *ngFor="let genre of genres" [ngValue]="genre">{{ genre.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Author</label>
+          <select [(ngModel)]="selectedBook.author" name="author" class="form-control">
+            <option *ngFor="let author of authors" [ngValue]="author">{{ author.name }}</option>
           </select>
         </div>
       </form>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveBook()">Save Changes</button>
+      <button class="btn btn-primary" (click)="updateBook()">Save Changes</button>
     </div>
   </div>
 </div>
