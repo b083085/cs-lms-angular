@@ -1,0 +1,54 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2 class="login-title">Library Management System</h2>
+    
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          required
+          class="form-control"
+          placeholder="Enter your email"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          required
+          class="form-control"
+          placeholder="Enter your password"
+        >
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="login-button-container">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading"
+        >
+          <span *ngIf="isLoading">Logging in...</span>
+          <span *ngIf="!isLoading">Login</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="signup-link">
+      <p>Don't have an account? 
+        <a (click)="navigateToSignup()" class="link">Sign up here</a>
+      </p>
+    </div>
+  </div>
+</div>

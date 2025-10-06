@@ -1,0 +1,303 @@
+<div class="book-list-container">
+  <header class="book-list-header">
+    <h1>Library Catalog</h1>
+    <p>Browse and search all available books</p>
+  </header>
+
+  <div class="book-list-content">
+    <div class="filters-and-search">
+      <div class="filters-section">
+        <h3>Filters</h3>
+        
+        <div class="filter-group">
+          <label for="authorFilter">Author</label>
+          <select id="authorFilter" [(ngModel)]="authorFilter" (change)="applyFilters()" class="form-control">
+            <option value="">All Authors</option>
+            <option value="F. Scott Fitzgerald">F. Scott Fitzgerald</option>
+            <option value="Harper Lee">Harper Lee</option>
+            <option value="George Orwell">George Orwell</option>
+            <option value="Jane Austen">Jane Austen</option>
+            <option value="J.D. Salinger">J.D. Salinger</option>
+            <option value="William Golding">William Golding</option>
+            <option value="J.R.R. Tolkien">J.R.R. Tolkien</option>
+            <option value="Charlotte Brontë">Charlotte Brontë</option>
+            <option value="Emily Brontë">Emily Brontë</option>
+            <option value="Aldous Huxley">Aldous Huxley</option>
+            <option value="C.S. Lewis">C.S. Lewis</option>
+            <option value="John Steinbeck">John Steinbeck</option>
+            <option value="Gabriel García Márquez">Gabriel García Márquez</option>
+            <option value="Oscar Wilde">Oscar Wilde</option>
+            <option value="Fyodor Dostoevsky">Fyodor Dostoevsky</option>
+            <option value="Mark Twain">Mark Twain</option>
+            <option value="Nathaniel Hawthorne">Nathaniel Hawthorne</option>
+            <option value="Mary Shelley">Mary Shelley</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="yearFilter">Publication Year</label>
+          <select id="yearFilter" [(ngModel)]="yearFilter" (change)="applyFilters()" class="form-control">
+            <option value="">All Years</option>
+            <option value="1813">1813</option>
+            <option value="1818">1818</option>
+            <option value="1847">1847</option>
+            <option value="1850">1850</option>
+            <option value="1851">1851</option>
+            <option value="1866">1866</option>
+            <option value="1884">1884</option>
+            <option value="1890">1890</option>
+            <option value="1925">1925</option>
+            <option value="1932">1932</option>
+            <option value="1937">1937</option>
+            <option value="1939">1939</option>
+            <option value="1945">1945</option>
+            <option value="1949">1949</option>
+            <option value="1950">1950</option>
+            <option value="1951">1951</option>
+            <option value="1954">1954</option>
+            <option value="1960">1960</option>
+            <option value="1967">1967</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="availabilityFilter">Availability</label>
+          <select id="availabilityFilter" [(ngModel)]="availabilityFilter" (change)="applyFilters()" class="form-control">
+            <option value="">All Books</option>
+            <option value="available">Available Only</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn btn-secondary btn-sm" (click)="clearFilters()">Clear Filters</button>
+        </div>
+      </div>
+
+      <div class="search-and-results">
+        <div class="search-section">
+          <div class="search-bar">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (input)="applyFilters()"
+              placeholder="Search by title, author, or ISBN..."
+              class="form-control"
+            >
+          </div>
+        </div>
+
+        <div class="books-table-container" *ngIf="displayedBooks.length > 0; else noResults">
+          <table class="books-table">
+            <thead>
+              <tr>
+                <th (click)="sort('title')" class="sortable">
+                  Title {{ getSortIcon('title') }}
+                </th>
+                <th (click)="sort('summary')" class="sortable">
+                  Summary {{ getSortIcon('summary') }}
+                </th>
+                <th (click)="sort('isbn')" class="sortable">
+                  ISBN {{ getSortIcon('isbn') }}
+                </th>
+                <th (click)="sort('published')" class="sortable">
+                  Published {{ getSortIcon('published') }}
+                </th>
+                <th (click)="sort('genre')" class="sortable">
+                  Genre {{ getSortIcon('genre') }}
+                </th>
+                <th (click)="sort('author')" class="sortable">
+                  Author {{ getSortIcon('author') }}
+                </th>
+                <th>Availability</th>
+                <th *ngIf="canPerformAdminActions()">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let book of displayedBooks">
+                <td class="title-cell">{{ book.title }}</td>
+                <td class="summary-cell">{{ book.summary }}</td>
+                <td class="isbn-cell">{{ book.isbn }}</td>
+                <td class="published-cell">{{ book.published }}</td>
+                <td class="genre-cell">{{ book.genre }}</td>
+                <td class="author-cell">{{ book.author }}</td>
+                <td class="availability-cell">
+                  <span [class]="book.available ? 'available' : 'unavailable'">
+                    {{ book.available ? 'Available' : 'Unavailable' }}
+                  </span>
+                </td>
+                <td *ngIf="canPerformAdminActions()" class="actions-cell">
+                  <div class="action-buttons">
+                    <button class="action-btn view-btn" (click)="viewBook(book)" title="View Book">
+                      👁️
+                    </button>
+                    <button class="action-btn edit-btn" (click)="editBook(book)" title="Edit Book">
+                      ✏️
+                    </button>
+                    <button class="action-btn delete-btn" (click)="deleteBook(book)" title="Delete Book">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #noResults>
+          <div class="no-results">
+            <div class="no-results-content">
+              <h3>No books found</h3>
+              <p>No books match your current filters.</p>
+              <p>Try adjusting your search criteria or clearing the filters.</p>
+            </div>
+          </div>
+        </ng-template>
+
+        <!-- Pagination -->
+        <div class="pagination-container" *ngIf="totalPages > 1">
+          <div class="pagination-info">
+            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ getMin(currentPage * itemsPerPage, filteredBooks.length) }} of {{ filteredBooks.length }} books
+          </div>
+          <div class="pagination">
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === 1"
+              (click)="onPageChange(currentPage - 1)">
+              Previous
+            </button>
+            
+            <button 
+              *ngFor="let page of getPageNumbers()"
+              class="pagination-btn"
+              [class.active]="page === currentPage"
+              (click)="onPageChange(page)">
+              {{ page }}
+            </button>
+            
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === totalPages"
+              (click)="onPageChange(currentPage + 1)">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Book Modal -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Book Details</h3>
+      <button class="close-btn" (click)="closeViewModal()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedBook">
+      <div class="book-detail">
+        <div class="detail-row">
+          <label>Title:</label>
+          <span>{{ selectedBook.title }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Author:</label>
+          <span>{{ selectedBook.author }}</span>
+        </div>
+        <div class="detail-row">
+          <label>ISBN:</label>
+          <span>{{ selectedBook.isbn }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Published:</label>
+          <span>{{ selectedBook.published }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Genre:</label>
+          <span>{{ selectedBook.genre }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Summary:</label>
+          <span>{{ selectedBook.summary }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Availability:</label>
+          <span [class]="selectedBook.available ? 'available' : 'unavailable'">
+            {{ selectedBook.available ? 'Available' : 'Unavailable' }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Book Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit Book</h3>
+      <button class="close-btn" (click)="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedBook">
+      <form class="edit-form">
+        <div class="form-group">
+          <label>Title:</label>
+          <input type="text" [(ngModel)]="selectedBook.title" name="title" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Author:</label>
+          <input type="text" [(ngModel)]="selectedBook.author" name="author" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>ISBN:</label>
+          <input type="text" [(ngModel)]="selectedBook.isbn" name="isbn" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Published Year:</label>
+          <input type="number" [(ngModel)]="selectedBook.published" name="published" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Genre:</label>
+          <input type="text" [(ngModel)]="selectedBook.genre" name="genre" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Summary:</label>
+          <textarea [(ngModel)]="selectedBook.summary" name="summary" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Availability:</label>
+          <select [(ngModel)]="selectedBook.available" name="available" class="form-control">
+            <option [ngValue]="true">Available</option>
+            <option [ngValue]="false">Unavailable</option>
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveBook()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="closeDeleteConfirm()">
+  <div class="modal delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirm Delete</h3>
+      <button class="close-btn" (click)="closeDeleteConfirm()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedBook">
+      <p>Are you sure you want to delete the book <strong>"{{ selectedBook.title }}"</strong> by {{ selectedBook.author }}?</p>
+      <p class="warning-text">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDeleteConfirm()">Cancel</button>
+      <button class="btn btn-danger" (click)="confirmDelete()">Delete Book</button>
+    </div>
+  </div>
+</div>

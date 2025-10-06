@@ -1,0 +1,114 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <h2 class="signup-title">Create Account</h2>
+    
+    <form (ngSubmit)="onSubmit()" class="signup-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            [(ngModel)]="firstName"
+            name="firstName"
+            required
+            class="form-control"
+            placeholder="Enter your first name"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            [(ngModel)]="lastName"
+            name="lastName"
+            required
+            class="form-control"
+            placeholder="Enter your last name"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select
+          id="gender"
+          [(ngModel)]="gender"
+          name="gender"
+          required
+          class="form-control"
+        >
+          <option value="" disabled selected>Select your gender</option>
+          <option value="M">Male</option>
+          <option value="F">Female</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          required
+          class="form-control"
+          placeholder="Enter your email"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          required
+          class="form-control"
+          placeholder="Enter your password (min 6 characters)"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+          required
+          class="form-control"
+          placeholder="Confirm your password"
+        >
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <div class="signup-button-container">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading"
+        >
+          <span *ngIf="isLoading">Creating account...</span>
+          <span *ngIf="!isLoading">Create Account</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="login-link">
+      <p>Already have an account? 
+        <a (click)="navigateToLogin()" class="link">Login here</a>
+      </p>
+    </div>
+  </div>
+</div>

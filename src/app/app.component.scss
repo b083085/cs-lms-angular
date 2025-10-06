@@ -1,0 +1,9 @@
+.main-content {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.main-content.with-nav {
+  min-height: calc(100vh - 70px);
+  padding-top: 0;
+}

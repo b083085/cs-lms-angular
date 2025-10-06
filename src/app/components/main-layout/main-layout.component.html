@@ -1,0 +1,41 @@
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>📚 Library Management</h2>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-item" 
+           [class.active]="activeMenuItem === 'dashboard'"
+           (click)="navigateTo('dashboard')">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Dashboard</span>
+      </div>
+      
+      <div class="nav-item" 
+           [class.active]="activeMenuItem === 'books'"
+           (click)="navigateTo('books')">
+        <span class="nav-icon">📚</span>
+        <span class="nav-text">Books</span>
+      </div>
+      
+      <div class="nav-item" 
+           [class.active]="activeMenuItem === 'borrowed'"
+           (click)="navigateTo('borrowed')">
+        <span class="nav-icon">📖</span>
+        <span class="nav-text">Borrowed</span>
+      </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-text">Logout</span>
+      </button>
+    </div>
+  </aside>
+  
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
