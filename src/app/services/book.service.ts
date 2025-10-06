@@ -54,6 +54,11 @@ export interface BookListResponse {
   items: Book[];
 }
 
+export interface RequestBorrowBookResponse {
+  bookBorrowedId: string;
+  book: Book;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -145,6 +150,19 @@ export class BookService {
               total: currentBooksResponse.total - 1
             });
           }
+        })
+      );
+  }
+
+  // request to borrow a book
+  requestBorrowBook(userId:string, bookId:string): Observable<RequestBorrowBookResponse> {
+    const url = `${this.API_URL}/books/borrow/request`;
+    console.log('BookService: Making POST request to:', url, 'with data:', { userId, bookId });
+
+    return this.http.post<RequestBorrowBookResponse>(url, { userId, bookId })
+      .pipe(
+        tap(response => {
+          console.log('BookService: Request to borrow book:', response);
         })
       );
   }

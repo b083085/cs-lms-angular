@@ -95,6 +95,10 @@
                 </td>
                 <td class="actions-cell">
                   <div class="action-buttons">
+                    <button class="action-btn borrow-btn" [disabled]="book.availability === 'Unavailable'"
+                      (click)="borrowBook(book)" title="Borrow Book">
+                      📚
+                    </button>
                     <button class="action-btn view-btn" (click)="viewBook(book)" title="View Book">
                       👁️
                     </button>
@@ -196,6 +200,7 @@
       </div>
     </div>
     <div class="modal-footer">
+
       <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
     </div>
   </div>
@@ -309,7 +314,8 @@
       <button class="close-btn" (click)="closeDeleteConfirm()">×</button>
     </div>
     <div class="modal-body" *ngIf="selectedBook">
-      <p>Are you sure you want to delete the book <strong>"{{ selectedBook.title }}"</strong> by {{ selectedBook.author.name
+      <p>Are you sure you want to delete the book <strong>"{{ selectedBook.title }}"</strong> by {{
+        selectedBook.author.name
         }}?</p>
       <p class="warning-text">This action cannot be undone.</p>
     </div>

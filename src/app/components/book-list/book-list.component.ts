@@ -23,6 +23,18 @@ import { debounceTime } from 'rxjs/operators';
   styleUrl: './book-list.component.scss',
 })
 export class BookListComponent implements OnInit {
+  borrowBook(book: Book): void {
+    const userId = this.authService.getCurrentUserId();
+    this.bookService.requestBorrowBook(userId, book.bookId).subscribe({
+      next: (response) => {
+        Swal.fire('Success', 'Book borrowed successfully!', 'success');
+        this.applyFilters();
+      },
+      error: (err) => {
+        Swal.fire('Error', 'Failed to borrow book.', 'error');
+      }
+    });
+  }
   ensureGenreReference(): void {
     if (this.selectedBook && this.selectedBook.genre && this.genres.length) {
       const found = this.genres.find(
