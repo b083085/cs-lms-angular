@@ -121,10 +121,10 @@ export class BookService {
   }
 
   // Update an existing book
-  updateBook(book: UpdateBookRequest): Observable<any> {
+  updateBook(book: UpdateBookRequest): Observable<void> {
     const url = `${this.API_URL}/books`;
     console.log('BookService: Making PUT request to:', url, 'with data:', book);
-    return this.http.put<any>(url, book);
+    return this.http.put<void>(url, book);
   }
 
   // Delete a book

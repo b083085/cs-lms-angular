@@ -7,7 +7,6 @@ import Swal from 'sweetalert2';
 import {
   BookService,
   CreateBookRequest,
-  BookListResponse,
   Book,
   Genre,
   Author,
@@ -24,10 +23,6 @@ import { debounceTime } from 'rxjs/operators';
   styleUrl: './book-list.component.scss',
 })
 export class BookListComponent implements OnInit {
-  messageBoxMessage: string = '';
-  messageBoxTitle: string = 'Success';
-
-  private successTimeout: any;
   ensureGenreReference(): void {
     if (this.selectedBook && this.selectedBook.genre && this.genres.length) {
       const found = this.genres.find(
@@ -312,7 +307,7 @@ export class BookListComponent implements OnInit {
         authorId: this.selectedBook.author.authorId,
       };
       this.bookService.updateBook(bookRequest).subscribe({
-        next: (data:any) => {
+        next: () => {
           Swal.fire('Success', 'Book updated successfully!', 'success');
           this.closeEditModal();
         },
@@ -374,13 +369,16 @@ export class BookListComponent implements OnInit {
   // Confirm delete
   confirmDelete(): void {
     if (this.selectedBook) {
-      const index = this.books.findIndex(
-        (book) => book.bookId === this.selectedBook!.bookId
-      );
-      if (index !== -1) {
-        this.books.splice(index, 1);
-        this.applyFilters();
-      }
+      this.bookService.deleteBook(this.selectedBook.bookId).subscribe({
+        next: () => {
+          Swal.fire('Success', 'Book deleted successfully!', 'success');
+          this.applyFilters();
+        },
+        error: (err: any) => {
+          console.error('Failed to delete book:', err);
+          Swal.fire('Error', 'Failed to delete book.', 'error');
+        }
+      });
     }
     this.closeDeleteConfirm();
   }
