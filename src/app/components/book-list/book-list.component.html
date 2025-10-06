@@ -1,14 +1,23 @@
 <div class="book-list-container">
   <header class="book-list-header">
-    <h1>Library Catalog</h1>
-    <p>Browse and search all available books</p>
+    <div class="header-content">
+      <div class="header-left">
+        <h1>Library Catalog</h1>
+        <p>Browse and search all available books</p>
+      </div>
+      <div class="header-right">
+        <button *ngIf="!isBorrower()" class="btn btn-primary create-book-btn" (click)="createBook()">
+          Create Book
+        </button>
+      </div>
+    </div>
   </header>
 
   <div class="book-list-content">
     <div class="filters-and-search">
       <div class="filters-section">
         <h3>Filters</h3>
-        
+
         <div class="filter-group">
           <label for="authorFilter">Author</label>
           <select id="authorFilter" [(ngModel)]="authorFilter" (change)="applyFilters()" class="form-control">
@@ -62,7 +71,8 @@
 
         <div class="filter-group">
           <label for="availabilityFilter">Availability</label>
-          <select id="availabilityFilter" [(ngModel)]="availabilityFilter" (change)="applyFilters()" class="form-control">
+          <select id="availabilityFilter" [(ngModel)]="availabilityFilter" (change)="applyFilters()"
+            class="form-control">
             <option value="">All Books</option>
             <option value="available">Available Only</option>
             <option value="unavailable">Unavailable</option>
@@ -77,17 +87,12 @@
       <div class="search-and-results">
         <div class="search-section">
           <div class="search-bar">
-            <input
-              type="text"
-              [(ngModel)]="searchTerm"
-              (input)="applyFilters()"
-              placeholder="Search by title, author, or ISBN..."
-              class="form-control"
-            >
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
+              placeholder="Search by title, author, or ISBN..." class="form-control">
           </div>
         </div>
 
-        <div class="books-table-container" *ngIf="displayedBooks.length > 0; else noResults">
+        <div class="books-table-container" *ngIf="books.length > 0; else noResults">
           <table class="books-table">
             <thead>
               <tr>
@@ -114,16 +119,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let book of displayedBooks">
+              <tr *ngFor="let book of books">
                 <td class="title-cell">{{ book.title }}</td>
                 <td class="summary-cell">{{ book.summary }}</td>
                 <td class="isbn-cell">{{ book.isbn }}</td>
-                <td class="published-cell">{{ book.published }}</td>
-                <td class="genre-cell">{{ book.genre }}</td>
-                <td class="author-cell">{{ book.author }}</td>
+                <td class="published-cell">{{ book.publishedOn | date:'yyyy' }}</td>
+                <td class="genre-cell">{{ book.genre.name }}</td>
+                <td class="author-cell">{{ book.author.name }}</td>
                 <td class="availability-cell">
-                  <span [class]="book.available ? 'available' : 'unavailable'">
-                    {{ book.available ? 'Available' : 'Unavailable' }}
+                  <span [class]="book.availability ? 'available' : 'unavailable'">
+                    {{ book.availability ? 'Available' : 'Unavailable' }}
                   </span>
                 </td>
                 <td *ngIf="canPerformAdminActions()" class="actions-cell">
@@ -157,27 +162,19 @@
         <!-- Pagination -->
         <div class="pagination-container" *ngIf="totalPages > 1">
           <div class="pagination-info">
-            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ getMin(currentPage * itemsPerPage, filteredBooks.length) }} of {{ filteredBooks.length }} books
+            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ getMin(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} books
           </div>
           <div class="pagination">
-            <button 
-              class="pagination-btn" 
-              [disabled]="currentPage === 1"
-              (click)="onPageChange(currentPage - 1)">
+            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
               Previous
             </button>
-            
-            <button 
-              *ngFor="let page of getPageNumbers()"
-              class="pagination-btn"
-              [class.active]="page === currentPage"
+
+            <button *ngFor="let page of getPageNumbers()" class="pagination-btn" [class.active]="page === currentPage"
               (click)="onPageChange(page)">
               {{ page }}
             </button>
-            
-            <button 
-              class="pagination-btn" 
-              [disabled]="currentPage === totalPages"
+
+            <button class="pagination-btn" [disabled]="currentPage === totalPages"
               (click)="onPageChange(currentPage + 1)">
               Next
             </button>
@@ -211,7 +208,7 @@
         </div>
         <div class="detail-row">
           <label>Published:</label>
-          <span>{{ selectedBook.published }}</span>
+          <span>{{ selectedBook.publishedOn }}</span>
         </div>
         <div class="detail-row">
           <label>Genre:</label>
@@ -223,14 +220,56 @@
         </div>
         <div class="detail-row">
           <label>Availability:</label>
-          <span [class]="selectedBook.available ? 'available' : 'unavailable'">
-            {{ selectedBook.available ? 'Available' : 'Unavailable' }}
+          <span [class]="selectedBook.availability ? 'available' : 'unavailable'">
+            {{ selectedBook.availability ? 'Available' : 'Unavailable' }}
           </span>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Book Modal -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Create Book</h3>
+      <button class="close-btn" (click)="closeCreateModal()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="newBook">
+      <form class="edit-form">
+        <div class="form-group">
+          <label>Title:</label>
+          <input type="text" [(ngModel)]="newBook.title" name="title" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Summary:</label>
+          <textarea [(ngModel)]="newBook.summary" name="summary" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>ISBN:</label>
+          <input type="text" [(ngModel)]="newBook.isbn" name="isbn" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Published Year:</label>
+          <input type="number" [(ngModel)]="newBook.publishedOn" name="published" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Genre:</label>
+          <input type="text" [(ngModel)]="newBook.genre" name="genre" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Author:</label>
+          <input type="text" [(ngModel)]="newBook.author" name="author" class="form-control">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveBook()">Create</button>
     </div>
   </div>
 </div>
@@ -258,7 +297,7 @@
         </div>
         <div class="form-group">
           <label>Published Year:</label>
-          <input type="number" [(ngModel)]="selectedBook.published" name="published" class="form-control">
+          <input type="number" [(ngModel)]="selectedBook.publishedOn" name="published" class="form-control">
         </div>
         <div class="form-group">
           <label>Genre:</label>
@@ -270,7 +309,7 @@
         </div>
         <div class="form-group">
           <label>Availability:</label>
-          <select [(ngModel)]="selectedBook.available" name="available" class="form-control">
+          <select [(ngModel)]="selectedBook.availability" name="available" class="form-control">
             <option [ngValue]="true">Available</option>
             <option [ngValue]="false">Unavailable</option>
           </select>
@@ -292,7 +331,8 @@
       <button class="close-btn" (click)="closeDeleteConfirm()">×</button>
     </div>
     <div class="modal-body" *ngIf="selectedBook">
-      <p>Are you sure you want to delete the book <strong>"{{ selectedBook.title }}"</strong> by {{ selectedBook.author }}?</p>
+      <p>Are you sure you want to delete the book <strong>"{{ selectedBook.title }}"</strong> by {{ selectedBook.author
+        }}?</p>
       <p class="warning-text">This action cannot be undone.</p>
     </div>
     <div class="modal-footer">

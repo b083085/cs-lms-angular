@@ -27,10 +27,6 @@ export const routes: Routes = [
         loadComponent: () => import('./components/borrowed/borrowed.component').then(m => m.BorrowedComponent)
       },
       { 
-        path: 'add-book', 
-        loadComponent: () => import('./components/add-book/add-book.component').then(m => m.AddBookComponent)
-      },
-      { 
         path: 'borrow-book', 
         loadComponent: () => import('./components/borrow-book/borrow-book.component').then(m => m.BorrowBookComponent)
       },

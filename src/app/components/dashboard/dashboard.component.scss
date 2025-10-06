@@ -38,6 +38,7 @@
   border-radius: 6px;
   font-size: 14px;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .header-right .btn:hover {
@@ -45,6 +46,7 @@
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-1px);
 }
+
 
 .dashboard-header h1 {
   margin: 0;
@@ -161,6 +163,11 @@
   
   .header-center {
     order: -1; /* Move welcome message to top on mobile */
+  }
+  
+  .header-right .btn {
+    width: 100%;
+    padding: 10px 16px;
   }
   
   .dashboard-header h1 {

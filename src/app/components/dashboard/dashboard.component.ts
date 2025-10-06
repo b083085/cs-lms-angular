@@ -97,6 +97,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subscriptions.push(dashboardSub);
   }
 
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
