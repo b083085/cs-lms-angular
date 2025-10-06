@@ -88,12 +88,32 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  getCurrentUserId(): string {
+    return this.getCurrentUser()?.userId || '';
+  }
+
+  getCurrentUserRole(): string {
+    return this.getCurrentUser()?.role || '';
+  }
+
   getAuthToken(): string | null {
     return localStorage.getItem('authToken');
   }
 
   getRefreshToken(): string | null {
     return localStorage.getItem('refreshToken');
+  }
+
+  // Debug method to check token details
+  debugToken(): void {
+    const token = this.getAuthToken();
+    console.log('=== TOKEN DEBUG ===');
+    console.log('Token exists:', !!token);
+    console.log('Token length:', token?.length);
+    console.log('Token starts with:', token?.substring(0, 20) + '...');
+    console.log('Token ends with:', '...' + token?.substring(token.length - 20));
+    console.log('Full token:', token);
+    console.log('==================');
   }
 
   private loadUserFromStorage(): void {
