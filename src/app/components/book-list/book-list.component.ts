@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { BookService, CreateBookRequest, BookListResponse, Book } from '../../services/book.service';
+import { BookService, CreateBookRequest, BookListResponse, Book, Genre, Author } from '../../services/book.service';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-book-list',
@@ -13,9 +15,25 @@ import { BookService, CreateBookRequest, BookListResponse, Book } from '../../se
   styleUrl: './book-list.component.scss'
 })
 export class BookListComponent implements OnInit {
+  onSearchInputEvent(event: Event): void {
+    const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
+    this.onSearchInput(value);
+  }
+  private searchSubject = new Subject<string>();
+  ngAfterViewInit(): void {
+    this.searchSubject.pipe(
+      debounceTime(300)
+    ).subscribe((term: string) => {
+      this.searchTerm = term;
+      this.applyFilters();
+    });
+  }
+  onSearchInput(term: string): void {
+  this.searchSubject.next(term);
+  }
   authorFilter = '';
-  yearFilter = '';
-  availabilityFilter = '';
+  yearFilter = 0;
+  availabilityFilter = 'Available';
   searchTerm = '';
 
   constructor(
@@ -36,6 +54,9 @@ export class BookListComponent implements OnInit {
   
   // Sample books data
   books: Book[] = [];
+  genres: Genre[] = [];
+  authors: Author[] = [];
+  years: number[] = [];
   
   // Modal states
   showViewModal = false;
@@ -49,28 +70,48 @@ export class BookListComponent implements OnInit {
   userRole = 'member'; // 'admin', 'librarian', 'member'
 
   ngOnInit(): void {
-    this.loadBooks('', '', 'Ascending', 1, 10);
+    this.applyFilters();
+    this.loadGenres();
+    this.loadAuthors();
     this.loadUserRole();
+    this.loadYears();
   }
 
   loadUserRole(): void {
-    // In a real app, this would come from an auth service
-    // For demo purposes, we'll simulate different roles based on login
-    const storedRole = localStorage.getItem('userRole');
-    if (storedRole) {
-      this.userRole = storedRole;
-    } else {
-      // Default to member role
-      this.userRole = 'member';
-    }
+    this.userRole = this.authService.getCurrentUserRole();
   }
 
   applyFilters(): void {
-    this.loadBooks(this.searchTerm, this.sortColumn, this.sortDirection, 1, this.itemsPerPage);
+    this.loadBooks(
+      this.authorFilter, 
+      this.yearFilter, 
+      this.availabilityFilter, 
+      this.searchTerm, 
+      this.sortColumn, 
+      this.sortDirection, 
+      this.currentPage, 
+      this.itemsPerPage
+    );
   }
 
-  loadBooks(searchTerm:string | '', sortBy:string | '', sortDirection:string | '', page:number | 1, pageSize:number | 10): void {
-    this.bookService.getBooks(searchTerm, sortBy, sortDirection, page, pageSize).subscribe({
+  loadYears(): void {
+    const currentYear = new Date().getFullYear();
+    this.years = [];
+    for (let year = currentYear; year >= 1900; year--) {
+      this.years.push(year);
+    }
+  }
+
+  loadBooks(
+    authorFilter: string = '', 
+    yearFilter: number | 0 = 0, 
+    availabilityFilter: string = '',
+    searchTerm:string | '', 
+    sortBy:string | '', 
+    sortDirection:string | '', 
+    page:number | 1, 
+    pageSize:number | 10): void {
+    this.bookService.getBooks(authorFilter, yearFilter, availabilityFilter, searchTerm, sortBy, sortDirection, page, pageSize).subscribe({
       next: (response) => {
         this.books = response.items;
         this.itemsPerPage = response.pageSize;
@@ -83,8 +124,29 @@ export class BookListComponent implements OnInit {
       }
     });
   }
-  
 
+  loadGenres(): void {
+    this.bookService.getGenres().subscribe({
+      next: (genres) => {
+        this.genres = genres;
+      },
+      error: (err) => {
+        console.error('Failed to fetch genres:', err);
+      }
+    });
+  }
+
+  loadAuthors(): void {
+    this.bookService.getAuthors().subscribe({
+      next: (authors) => {
+        this.authors = authors;
+      },
+      error: (err) => {
+        console.error('Failed to fetch authors:', err);
+      }
+    });
+  }
+  
   sort(column: string): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'Ascending' ? 'Descending' : 'Ascending';
@@ -93,7 +155,7 @@ export class BookListComponent implements OnInit {
       this.sortDirection = 'Ascending';
     }
     
-    this.loadBooks(this.searchTerm, this.sortColumn, this.sortDirection, this.currentPage, this.itemsPerPage);
+    this.applyFilters();
   }
 
   getSortIcon(column: string): string {
@@ -103,7 +165,7 @@ export class BookListComponent implements OnInit {
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.loadBooks(this.searchTerm, this.sortColumn, this.sortDirection, this.currentPage, this.itemsPerPage);
+    this.applyFilters();
   }
 
   getPageNumbers(): number[] {
@@ -125,10 +187,10 @@ export class BookListComponent implements OnInit {
 
   clearFilters(): void {
     this.authorFilter = '';
-    this.yearFilter = '';
-    this.availabilityFilter = '';
+    this.yearFilter = 0;
+    this.availabilityFilter = 'Available';
     this.searchTerm = '';
-    this.loadBooks(this.searchTerm, this.sortColumn, this.sortDirection, this.currentPage, this.itemsPerPage);
+    this.applyFilters();
   }
 
   getMin(a: number, b: number): number {
@@ -137,7 +199,8 @@ export class BookListComponent implements OnInit {
 
   // Check if user can perform admin actions
   canPerformAdminActions(): boolean {
-    return this.userRole === 'admin' || this.userRole === 'librarian';
+    return true;
+    return this.userRole === 'Administrator' || this.userRole === 'Librarian';
   }
 
   // Modal actions
@@ -178,7 +241,7 @@ export class BookListComponent implements OnInit {
       const index = this.books.findIndex(book => book.bookId === this.selectedBook!.bookId);
       if (index !== -1) {
         this.books[index] = { ...this.selectedBook };
-        this.loadBooks(this.searchTerm, this.sortColumn, this.sortDirection, this.currentPage, this.itemsPerPage);
+        this.applyFilters();
       }
     }
     this.closeEditModal();
@@ -195,8 +258,8 @@ export class BookListComponent implements OnInit {
           isbn: this.newBook.isbn,
           publishedOn: this.newBook.publishedOn,
           totalCopies: this.newBook.totalCopies,
-          genre: this.newBook.genre.genreId,
-          author: this.newBook.author.authorId
+          genreId: this.newBook.genre.genreId,
+          authorId: this.newBook.author.authorId
         };
         this.bookService.addBook(bookRequest).subscribe({
           next: (createdBook: Book) => {
@@ -212,7 +275,7 @@ export class BookListComponent implements OnInit {
               totalCopies: createdBook.totalCopies,
               availability: createdBook.availability // or use a field from response if available
             });
-            this.loadBooks(this.searchTerm, this.sortColumn, this.sortDirection, this.currentPage, this.itemsPerPage);
+            this.applyFilters();
             this.closeCreateModal();
           },
           error: (err: any) => {
@@ -231,7 +294,7 @@ export class BookListComponent implements OnInit {
       const index = this.books.findIndex(book => book.bookId === this.selectedBook!.bookId);
       if (index !== -1) {
         this.books.splice(index, 1);
-        this.loadBooks(this.searchTerm, this.sortColumn, this.sortDirection, this.currentPage, this.itemsPerPage);
+        this.applyFilters();
       }
     }
     this.closeDeleteConfirm();

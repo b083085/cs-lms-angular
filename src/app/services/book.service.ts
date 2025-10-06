@@ -22,8 +22,8 @@ export interface CreateBookRequest {
   isbn: string;
   publishedOn: string;
   totalCopies: number;
-  genre: string;
-  author: string;
+  genreId: string;
+  authorId: string;
 }
 
 export interface Genre {
@@ -49,13 +49,17 @@ export interface BookListResponse {
 export class BookService {
   private readonly API_URL = environment.apiUrl;
   private booksSubject = new BehaviorSubject<BookListResponse | null>(null);
+  private genresSubject = new BehaviorSubject<Genre[] | null>(null);
+  private authorsSubject = new BehaviorSubject<Author[] | null>(null);
   public books$ = this.booksSubject.asObservable();
+  public genres$ = this.genresSubject.asObservable();
+  public authors$ = this.authorsSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
   // Get all books
-  getBooks(searchTerm:string | '', sortBy:string | '', sortDirection:string | 'Ascending', page:number, pageSize:number): Observable<BookListResponse> {
-    const url = `${this.API_URL}/books?page=${page}&pageSize=${pageSize}&searchTerm=${searchTerm}&sortBy=${sortBy}&sortDirection=${sortDirection}`;
+  getBooks(author:string | '', year: number | 0, availability:string | '', searchTerm:string | '', sortBy:string | '', sortDirection:string | 'Ascending', page:number, pageSize:number): Observable<BookListResponse> {
+    const url = `${this.API_URL}/books?page=${page}&pageSize=${pageSize}&searchTerm=${searchTerm}&sortBy=${sortBy}&sortDirection=${sortDirection}&author=${author}&publishedYear=${year}&availability=${availability}`;
     console.log('BookService: Making GET request to:', url);
     
     return this.http.get<BookListResponse>(url)
@@ -143,6 +147,34 @@ export class BookService {
               total: currentBooksResponse.total - 1
             });
           }
+        })
+      );
+  }
+
+  // Get all genres
+  getGenres(): Observable<Genre[]> {
+    const url = `${this.API_URL}/genres`;
+    console.log('BookService: Making GET request to:', url);
+    
+    return this.http.get<Genre[]>(url)
+      .pipe(
+        tap(genres => {
+          console.log('BookService: Received genres:', genres);
+          this.genresSubject.next(genres);
+        })
+      );
+  }
+
+  // Get all authors
+  getAuthors(): Observable<Author[]> {
+    const url = `${this.API_URL}/authors`;
+    console.log('BookService: Making GET request to:', url);
+
+    return this.http.get<Author[]>(url)
+      .pipe(
+        tap(authors => {
+          console.log('BookService: Received authors:', authors);
+          this.authorsSubject.next(authors);
         })
       );
   }
